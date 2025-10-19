@@ -7,13 +7,14 @@ Function IsAdmin()
     Dim shell, result
     Set shell = CreateObject("WScript.Shell")
     On Error Resume Next
-    shell.RegRead "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Run\" ' try reading a protected key
+    ' Try reading a protected registry key
+    shell.RegRead "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Run\"
     If Err.Number = 0 Then
         IsAdmin = True
     Else
         IsAdmin = False
     End If
-    On Error Goto 0
+    On Error GoTo 0
 End Function
 
 ' Main execution
