@@ -1,10 +1,10 @@
 ' VBScript
 ' Purpose: Elevate itself to run commands with administrative privileges
-' Usage: Place the commands you want to run as an admin inside the Elevated code block
+' Usage: Place the commands you want to run as admin inside the Elevated code block
 
 ' Function to check if script is running as admin
 Function IsAdmin()
-    Dim shell, result
+    Dim shell
     Set shell = CreateObject("WScript.Shell")
     On Error Resume Next
     ' Try reading a protected registry key
@@ -29,10 +29,17 @@ If Not IsAdmin() Then
 End If
 
 ' ===== Elevation successful, place any code below =====
-' Example: creating a file in System32 (requires elevated privileges)
+' Example: creating a file in a temporary directory (avoiding permission issues)
 Dim fso, filePath, file
 Set fso = CreateObject("Scripting.FileSystemObject")
-filePath = "C:\Windows\System32\test_admin.txt"
+
+' Create a file in a temp directory instead of System32
+filePath = "C:\Temp\test_admin.txt"
+
+' Ensure the Temp directory exists
+If Not fso.FolderExists("C:\Temp") Then
+    fso.CreateFolder("C:\Temp")
+End If
 
 If Not fso.FileExists(filePath) Then
     Set file = fso.CreateTextFile(filePath, True)
@@ -40,4 +47,4 @@ If Not fso.FileExists(filePath) Then
     file.Close
 End If
 
-MsgBox "Script is running with admin privileges. File created successfully."
+MsgBox "Script is running with admin privileges. File created at: " & filePath
